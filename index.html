@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="sv">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="NO Flashcards - Interaktiva flashcards för naturvetenskap"
+        />
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"
+        />
+        <title>NO Flashcards</title>
+        <style>
+            :root {
+                --bg: #111111;
+                --card-bg: #ffffff;
+                --card-border: #d0d0d0;
+                --card-shadow: rgba(0, 0, 0, 0.15);
+                --text-main: #111111;
+                --text-muted: #555555;
+                --accent: #333333;
+                --accent-soft: #f2f2f2;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                    'Segoe UI', sans-serif;
+                background: radial-gradient(
+                    circle at top,
+                    #222 0,
+                    #111 40%,
+                    #000 100%
+                );
+                color: #f5f5f5;
+                min-height: 100vh;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .app {
+                width: 100%;
+                max-width: 1200px;
+            }
+
+            header {
+                text-align: center;
+                margin-bottom: 24px;
+            }
+
+            header h1 {
+                font-size: 2.2rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #ffffff;
+                margin-bottom: 4px;
+            }
+
+            header p {
+                font-size: 0.9rem;
+                color: #c0c0c0;
+            }
+
+            .toolbar {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin: 16px 0 8px;
+                align-items: center;
+            }
+
+            .toolbar input {
+                flex: 1 1 200px;
+                padding: 8px 10px;
+                border-radius: 999px;
+                border: 1px solid #444;
+                background: #151515;
+                color: #f5f5f5;
+                font-size: 0.9rem;
+                outline: none;
+            }
+
+            .toolbar input::placeholder {
+                color: #777;
+            }
+
+            .tag-bar {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .tag {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                padding: 6px 10px;
+                border-radius: 999px;
+                border: 1px solid #444;
+                color: #ccc;
+                cursor: pointer;
+                background: transparent;
+                transition: background 0.15s ease, color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .tag.active {
+                background: #f5f5f5;
+                color: #111;
+                border-color: #f5f5f5;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+                gap: 12px;
+            }
+
+            .card {
+                background: linear-gradient(145deg, #ffffff, #f5f5f5);
+                border-radius: 14px;
+                border: 1px solid var(--card-border);
+                box-shadow: 0 10px 20px var(--card-shadow);
+                padding: 14px 14px 10px;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                transition: transform 0.15s ease, box-shadow 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+                border-color: #b0b0b0;
+            }
+
+            .card:active {
+                transform: translateY(0);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .card-term {
+                font-weight: 700;
+                font-size: 1rem;
+                color: var(--text-main);
+            }
+
+            .card-subject {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                padding: 2px 8px;
+                border-radius: 999px;
+                background: var(--accent-soft);
+                color: var(--text-muted);
+                flex-shrink: 0;
+                display: none;
+            }
+
+            .card-question-label {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.16em;
+                color: #888;
+                margin-top: 2px;
+            }
+
+            .card-answer {
+                margin-top: 8px;
+                font-size: 0.9rem;
+                line-height: 1.4;
+                color: var(--text-muted);
+                max-height: 0;
+                opacity: 0;
+                overflow: hidden;
+                transition: max-height 0.18s ease-out, opacity 0.18s ease-out;
+            }
+
+            .card.open .card-answer {
+                max-height: 200px; /* funkar bra för korta svar */
+                opacity: 1;
+            }
+
+            .card.open .card-term {
+                display: none;
+            }
+            .card.open .card-subject {
+                display: block;
+            }
+
+            .card-toggle {
+                position: absolute;
+                bottom: 8px;
+                right: 12px;
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                color: #666;
+            }
+
+            .card.open .card-toggle::after {
+                display: none;
+            }
+
+            .card:not(.open) .card-toggle::after {
+                display: none;
+            }
+
+            .count {
+                font-size: 0.75rem;
+                color: #999;
+                margin-bottom: 8px;
+            }
+
+            @media (max-width: 600px) {
+                header h1 {
+                    font-size: 1.6rem;
+                }
+                body {
+                    padding: 16px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app">
+            <header>
+                <h1>NO Flashcards</h1>
+                <p>
+                    Klicka på ett kort för att visa svaret. Sök eller filtrera
+                    efter område.
+                </p>
+            </header>
+
+            <div class="toolbar">
+                <input
+                    id="search"
+                    type="text"
+                    placeholder="Sök begrepp eller förklaring..."
+                />
+                <div class="tag-bar">
+                    <button class="tag active" data-subject="alla">Alla</button>
+                    <button class="tag" data-subject="vetenskap">
+                        Vetenskap
+                    </button>
+                    <button class="tag" data-subject="biologi">Biologi</button>
+                    <button class="tag" data-subject="ekologi">Ekologi</button>
+                    <button class="tag" data-subject="energi">Energi</button>
+                    <button class="tag" data-subject="miljö">
+                        Miljö & hållbarhet
+                    </button>
+                    <button class="tag" data-subject="genetik">Genetik</button>
+                    <button class="tag" data-subject="hälsa">
+                        Hälsa & livsstil
+                    </button>
+                    <button class="tag" data-subject="sexualitet">
+                        Sex & samlevnad
+                    </button>
+                </div>
+            </div>
+
+            <div class="count" id="count"></div>
+
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <script>
+            const flashcards = [
+                /* ------------ VETENSKAPLIGT ARBETSSÄTT ------------ */
+                {
+                    q: `Antibiotika`,
+                    a: `Ett medel som dödar bakterier eller hindrar deras tillväxt.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Atomteorin`,
+                    a: `Teorin som beskriver hur all materia är uppbyggd av små partiklar kallade atomer.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Dubbelblind studie`,
+                    a: `En studie där varken deltagare eller forskare vet vilka som får den aktiva behandlingen och vilka som får placebo.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Evolutionsteorin`,
+                    a: `Teorin om att arter förändras över tid genom naturligt urval.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Experiment`,
+                    a: `En kontrollerad undersökning för att bekräfta eller motbevisa en hypotes.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Falsifierbar`,
+                    a: `Kan testas och eventuellt motbevisas genom experiment och observationer.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Frågeställning`,
+                    a: `En specifik fråga som en vetenskaplig studie försöker besvara.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Hypotes`,
+                    a: `Ett antagande eller en förutsägelse som kan testas genom experiment.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Klinisk prövning`,
+                    a: `En medicinsk studie där en ny behandling testas på människor.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Kritisk granskning`,
+                    a: `Noggrann bedömning av ett påståendes giltighet.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Laborationsrapport`,
+                    a: `En skriftlig redogörelse för ett genomfört experiment.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Observation`,
+                    a: `Insamling av information genom att noggrant titta, lyssna eller mäta något.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Placeboeffekt`,
+                    a: `En effekt av en behandling som bara beror på patientens tro på behandlingen.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Pseudovetenskap`,
+                    a: `En teori eller metod som påstår sig vara vetenskaplig men inte uppfyller vetenskapliga kriterier.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Resistent bakterie`,
+                    a: `En bakterie som har utvecklat motståndskraft mot antibiotika.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Resultat`,
+                    a: `De data och den information som samlas in från ett experiment.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Systematisk undersökning`,
+                    a: `Upprepade tester med noggrant planerade metoder.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Vetenskaplig metod`,
+                    a: `En metod för att systematiskt undersöka och förstå världen genom observation, hypoteser, experiment och analys.`,
+                    subject: `vetenskap`
+                },
+                {
+                    q: `Vetenskaplig teori`,
+                    a: `Den bästa förklaringen av ett fenomen, som stöds av observationer och bekräftade hypoteser.`,
+                    subject: `vetenskap`
+                },
+
+                /* ------------ BIOLOGI: CELLER, ORGANISMER, VATTEN ------------ */
+                {
+                    q: `Alg`,
+                    a: `Vattenlevande organismer som kan utföra fotosyntes.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Arkéer`,
+                    a: `En grupp encelliga mikroorganismer som ofta lever i extrema miljöer.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Art`,
+                    a: `En grupp organismer som kan fortplanta sig med varandra och få fertil avkomma.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Arvsmassa`,
+                    a: `DNA i cellen som bär på den genetiska informationen.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Avdunstning`,
+                    a: `När vatten övergår från flytande form till gasform.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Avrinning`,
+                    a: `Vatten som rinner över markytan och tillbaka till vattendrag, sjöar och hav.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Bakterier`,
+                    a: `Encelliga mikroorganismer som finns överallt och kan vara både nyttiga och skadliga.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Blomväxt`,
+                    a: `Växter som producerar blommor och frön inneslutna i frukter.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Blötdjur`,
+                    a: `Mjuka djur, ofta med skal, som sniglar och musslor.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Bräckt vatten`,
+                    a: `Vatten med en salthalt mellan 0,05 och 3 %, som Östersjön.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Cell`,
+                    a: `Den minsta levande enheten som bygger upp alla organismer.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Cellandning`,
+                    a: `Process där celler omvandlar glukos och syre till energi, koldioxid och vatten.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Cellkärna`,
+                    a: `En struktur i eukaryota celler som innehåller arvsmassan.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Cellmembran`,
+                    a: `Ett skyddande lager som omger cellen och reglerar vilka ämnen som får komma in och ut.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Cellvägg`,
+                    a: `Ett hårt, skyddande lager utanför cellmembranet hos växter, svampar och vissa bakterier.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Däggdjur`,
+                    a: `Ryggradsdjur som ger di till sina ungar och oftast har päls.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Enzym`,
+                    a: `Proteiner som påskyndar kemiska reaktioner i kroppen.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Eukaryoter`,
+                    a: `En- eller flercelliga organismer som har cellkärna och andra organeller.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Fertil`,
+                    a: `Förmåga att reproducera och få avkomma.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Fossilt bränsle`,
+                    a: `Energikällor som kol, olja och naturgas, bildade av döda organismer under miljontals år.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Fotosyntes`,
+                    a: `Process där växter omvandlar koldioxid och vatten till syre och socker med hjälp av solljus.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Fruktkropp`,
+                    a: `Den del av en svamp som producerar sporer.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Frö`,
+                    a: `Den del som blomväxter använder till att sprida sig vid fortplantning.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Fröväxt`,
+                    a: `Växter som förökar sig med frön, till exempel blomväxter och barrväxter.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Glukos`,
+                    a: `Ett organiskt ämne som är en viktig energikälla för celler.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Grundvatten`,
+                    a: `Vatten som finns under marken.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Hybrid`,
+                    a: `En korsning mellan två olika arter.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Infiltration`,
+                    a: `När vatten tränger ner genom marken och fyller på grundvattnet.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Klorofyll`,
+                    a: `Grönt pigment i kloroplaster som fångar ljusenergi för fotosyntesen.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Kloroplast`,
+                    a: `Organell i växtceller där fotosyntesen sker.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Kondensation`,
+                    a: `När vattenånga övergår från gasform till flytande form.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Kärlkryptogam`,
+                    a: `Växter som förökar sig med sporer och har kärl för att transportera vatten, som ormbunkar.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Lav`,
+                    a: `Symbios mellan en svamp och en alg.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Leddjur`,
+                    a: `Djur med exoskelett och ledade ben, som insekter och spindlar.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Mitokondrie`,
+                    a: `Cellens "kraftverk" som omvandlar socker till energi i form av ATP.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Mossa`,
+                    a: `Små, gröna växter som ofta växer på fuktiga platser och saknar rötter och kärl.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Mycel`,
+                    a: `Ett nätverk av svamptrådar under marken som absorberar näring.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Mykorrhiza`,
+                    a: `Symbios mellan svamp och växtrötter.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Nakenfröig växt`,
+                    a: `Växter vars frön inte är inneslutna i en frukt, till exempel barrträd.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Nederbörd`,
+                    a: `Vatten som faller från atmosfären till marken som regn, snö eller hagel.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Nässeldjur`,
+                    a: `Vattenlevande djur med nässelceller, som maneter och koraller.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Organ`,
+                    a: `En del av kroppen som består av olika vävnad och har en specifik funktion, till exempel hjärtat.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Organell`,
+                    a: `Avgränsade delar av cellen med specifika funktioner, som mitokondrier och kloroplaster.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Organiskt ämne`,
+                    a: `Föreningar som innehåller kol och utgör byggstenar i levande organismer.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Plankton`,
+                    a: `Små organismer som driver i vatten, inklusive växtplankton och djurplankton.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Prokaryoter`,
+                    a: `Encelliga organismer utan cellkärna, som bakterier och arkéer.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Ras`,
+                    a: `En undergrupp inom en art med särskilda egenskaper.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Ribosom`,
+                    a: `Cellens "proteinfabrik" där aminosyror sätts ihop till proteiner.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Ringmaskar`,
+                    a: `Maskar med segmenterade kroppar, som daggmaskar.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Ryggradsdjur`,
+                    a: `Djur med ett inre skelett och ryggrad, som fiskar, fåglar och däggdjur.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Saltvatten`,
+                    a: `Vatten med en salthalt över 3 %, som havsvatten.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Spor`,
+                    a: `Den del som mossor och kärlkryptogamer använder till att sprida sig vid fortplantning.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Steril`,
+                    a: `Oförmåga att reproducera och få avkomma.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Sötvatten`,
+                    a: `Vatten med en salthalt under 0,05 %, som sjöar och floder.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Transpiration`,
+                    a: `Avdunstning av vatten från växter.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Tång`,
+                    a: `Stora alger som växer i havet, inklusive brunalger och rödalger.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Vakuol`,
+                    a: `En vätskefylld blåsa i växtceller som lagrar näringsämnen och avfall.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Virus`,
+                    a: `Små kapslar med arvsmassa som invaderar celler för att fortplanta sig.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Vävnad`,
+                    a: `En samling celler med liknande struktur och funktion som arbetar tillsammans.`,
+                    subject: `biologi`
+                },
+
+                /* ------------ EKOLOGI & NATUR ------------ */
+                {
+                    q: `Abiotisk faktor`,
+                    a: `Icke-levande delar av ett ekosystem, som temperatur och vatten.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Algblomning`,
+                    a: `Snabb tillväxt av alger i vatten, ofta orsakad av övergödning.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Allemansrätt`,
+                    a: `Rätten att vistas i naturen och plocka bär och svamp, men med skyldighet att inte skada eller störa.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Andrahandskonsument`,
+                    a: `Köttätare som äter växtätare.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Artdatabanken`,
+                    a: `En svensk myndighet som samlar och sprider information om arter och deras status.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Artskyddsförordningen`,
+                    a: `Svensk lagstiftning som skyddar hotade arter och deras livsmiljöer.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Atmosfär`,
+                    a: `Det lager av luft som omger jorden.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Berggrund`,
+                    a: `Det fasta berget som utgör jordskorpans yttersta lager.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Betesmark`,
+                    a: `Mark som hålls fri från buskar och träd av betande djur.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Biosfär`,
+                    a: `Alla områden på jorden där liv förekommer, inklusive land, vatten och atmosfär.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Biotisk faktor`,
+                    a: `Levande delar av ett ekosystem, som växter och djur.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Blädning`,
+                    a: `Skötselmetod som gör att skogen får en blandning av träd i alla storlekar.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Bottenskikt`,
+                    a: `Det nedersta lagret av vegetation i en skog, bestående av mossor och lavar.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Buskskikt`,
+                    a: `Skogens näst högsta skikt (höjden är ca 0,5–2 meter).`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `CITES-konventionen`,
+                    a: `En internationell överenskommelse som reglerar handel med hotade djur- och växtarter.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Djupbottenzon`,
+                    a: `Den djupaste delen av en sjö där det är för mörkt för fotosyntes.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Djursamhälle`,
+                    a: `Alla djurarter som lever och samverkar inom ett visst område.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Död botten`,
+                    a: `Område i hav eller sjö där syrebrist har lett till att bottenlevande organismer har dött.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Ekologi`,
+                    a: `Läran om hur levande organismer samspelar med varandra och sin miljö.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Ekologisk nisch`,
+                    a: `En organisms habitat och alla resurser den behöver, som föda och skydd.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Ekosystem`,
+                    a: `Ett område där levande organismer samverkar med varandra och sin omgivning.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Ekosystemets bärkraft`,
+                    a: `Det maximala antalet individer av en art som ett ekosystem kan stödja.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Ekosystemtjänst`,
+                    a: `De fördelar som människor får från ekosystem, som pollinering och vattenrening.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Energiprincipen`,
+                    a: `Energi kan inte skapas eller förstöras, bara omvandlas från en form till en annan.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Energipyramid`,
+                    a: `En modell som visar hur energi minskar för varje nivå i en näringskedja.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Energirik näring`,
+                    a: `Organiska näringsämnen som ger mycket energi, som kolhydrater och fett.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Fjäll`,
+                    a: `De delar av bergskedjan som är så kalla och karga att det inte kan växa skog på dem.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Fri vattenzon`,
+                    a: `Den del av en sjö där vattnet är så djupt att solen inte når botten.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Fridlysning`,
+                    a: `Skydd som gör det förbjudet att skada eller samla in vissa växter och djur.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Fågelskyddsområde`,
+                    a: `Områden där fåglar skyddas från störningar, särskilt under häckningstid.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Fältskikt`,
+                    a: `Skiktet av ormbunkar och fröväxter som inte är högre än ungefär en halvmeter.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Förna`,
+                    a: `Det översta lagret av dött organiskt material som täcker marken i skogar.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Förstahandskonsument`,
+                    a: `Växtätare som äter producenter.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Habitat`,
+                    a: `Den naturliga livsmiljön där en organism lever.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Hage`,
+                    a: `Ett inhägnat område där boskap betar.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Hydrosfär`,
+                    a: `Allt vatten på jorden, inklusive hav, sjöar, floder och grundvatten.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Invasiv art`,
+                    a: `En art som sprider sig snabbt och stör ekosystemet där den introduceras.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Jaktlagstiftning`,
+                    a: `Regler som styr jakten för att säkerställa hållbara viltpopulationer.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Jordart`,
+                    a: `Markens mineralogiska sammansättning, som sand, lera eller morän.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Jordmån`,
+                    a: `Den översta delen av marken som påverkas av klimat och organismer och där växter växer.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Kalhuggning`,
+                    a: `Skogsskötselmetod där alla träd i ett område avverkas samtidigt.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Kemisk energi`,
+                    a: `Energi som lagras i kemiska bindningar och frigörs vid kemiska reaktioner.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Konsument`,
+                    a: `Organismer som får energi genom att äta andra organismer.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Kulturskog`,
+                    a: `Skog som har påverkats av människans bruk och skötsel.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Kärr`,
+                    a: `En typ våtmark med olika typer av växtlighet, kan vara näringsrika och näringsfattiga.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Litosfär`,
+                    a: `Jordens yttersta lager, jordskorpan.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Ljusenergi`,
+                    a: `Energi från solen som växter använder i fotosyntesen.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Miljöfaktor`,
+                    a: `En komponent i miljön som påverkar organismer, kan vara biotisk eller abiotisk.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Mineralämne`,
+                    a: `Oorganiska näringsämnen som är nödvändiga för organismer.`,
+                    subject: `biologi`
+                },
+                {
+                    q: `Mosse`,
+                    a: `Näringsfattig våtmark som domineras av ett tjockt lager vitmossa.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Mutualism`,
+                    a: `En typ av symbios där båda arterna tjänar på samarbetet.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Nationalpark`,
+                    a: `Det starkaste skyddet för värdefulla naturområden.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Naturbetesmark`,
+                    a: `Betesmark som aldrig har gödslats eller plöjts till åkrar.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Naturreservat`,
+                    a: `Ett värdefullt naturområde som skyddas av speciella regler och skötselplaner.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Naturskog`,
+                    a: `Skog som inte har påverkats av människan de senaste 150 åren.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Näringskedja`,
+                    a: `En enkel modell som visar hur näring och energi förs vidare från en organism till en annan.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Näringsväv`,
+                    a: `En komplex modell av alla näringskedjor i ett ekosystem som visar hur de är sammanlänkade.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Parasit`,
+                    a: `En art som utnyttjar en annan art.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Pollinerare`,
+                    a: `Organismer som överför pollen mellan blommor och hjälper till med växternas reproduktion.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Population`,
+                    a: `En grupp individer av samma art som lever i ett visst område.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Producent`,
+                    a: `Organismer som tillverkar sin egen näring genom fotosyntes, som växter.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Rödlistan`,
+                    a: `En lista över arter som är hotade och riskerar att dö ut.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Strandzon`,
+                    a: `Området där land och vatten möts, ofta rikt på biologisk mångfald.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Symbios`,
+                    a: `En nära relation där två arter på något sätt är beroende av varandra.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Tillväxtkurva`,
+                    a: `En graf som visar hur en populations storlek förändras över tid.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Toppkonsument`,
+                    a: `Rovdjur som står högst upp i en näringskedja och inte har några naturliga fiender.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Tredjehandskonsument`,
+                    a: `Köttätare som äter andra köttätare.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Trädgränsen`,
+                    a: `Den högsta höjden där träd kan växa på ett berg.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Trädskikt`,
+                    a: `Det översta lagret av vegetation i en skog (högre än ungefär 2 meter).`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Urskog`,
+                    a: `Naturlig skog som aldrig har påverkats av människan.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Våtmark`,
+                    a: `Områden som är periodvis eller permanent täckta av vatten, som mossar och kärr.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Växtsamhälle`,
+                    a: `Alla växtarter som lever och samverkar inom ett visst område.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Äng`,
+                    a: `En öppen mark med gräs och blommor som ofta slås för att få hö.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Överfiske`,
+                    a: `När fisk fångas snabbare än vad bestånden kan återhämta sig, vilket hotar deras överlevnad.`,
+                    subject: `ekologi`
+                },
+
+                /* ------------ ENERGI & KLIMAT ------------ */
+                {
+                    q: `Biobränsle`,
+                    a: `Bränslen tillverkade av organiskt material, som ved, etanol och biogas.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Biologisk mångfald`,
+                    a: `Hur många olika arter det finns i ett ekosystem.`,
+                    subject: `ekologi`
+                },
+                {
+                    q: `Effekt`,
+                    a: `Mängden energi som omvandlas eller överförs per tidsenhet, mäts i watt (W).`,
+                    subject: `energi`
+                },
+                {
+                    q: `Energi`,
+                    a: `Förmågan att utföra arbete eller orsaka förändring.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Energikvalitet`,
+                    a: `Energi med hög kvalitet har en form som är lätt att utnyttja, som elektrisk energi.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Förnybar energi`,
+                    a: `Energikällor som förnyas naturligt och inte tar slut, som sol, vind och vattenkraft.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Halveringstid`,
+                    a: `Den tid det tar för hälften av atomerna i ett radioaktivt ämne att sönderfalla.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Icke-förnybar energi`,
+                    a: `Energikällor som finns i begränsade mängder och kan ta slut, som kol, olja och naturgas.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Joniserande strålning`,
+                    a: `Strålning som har tillräckligt med energi för att skada celler.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Klimatscenarie`,
+                    a: `Datormodellering av möjliga framtida klimatförändringar.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Mellanlagring`,
+                    a: `Tillfällig förvaring av radioaktivt avfall innan det kan slutförvaras.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Oljeraffinaderi`,
+                    a: `Anläggning där råolja omvandlas till användbara produkter som bensin och smörjolja.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Radioaktivitet`,
+                    a: `Process där instabila atomkärnor sönderfaller och avger joniserande strålning.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Råolja`,
+                    a: `Den olja som utvinns ur berggrunden.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Slutförvaring`,
+                    a: `Permanent förvaring av radioaktivt avfall, oftast djupt under jord.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Tröskeleffekt`,
+                    a: `När vissa processer plötsligt går mycket snabbt när man har nått en viss temperaturhöjning, som avsmältning av glaciäris.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Verkningsgrad`,
+                    a: `Ett mått på hur mycket av energin som går till det vi vill.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Växthuseffekt`,
+                    a: `Process där växthusgaser i atmosfären absorberar jordens värmestrålning och höjer temperaturen.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Växthusgas`,
+                    a: `Gaser som bidrar till växthuseffekten, som koldioxid och metan.`,
+                    subject: `energi`
+                },
+                {
+                    q: `Återkopplingsmekanism`,
+                    a: `Processer som startas av ett varmare klimat och sedan driver ännu starkare klimatförändringar utan människans påverkan.`,
+                    subject: `energi`
+                },
+
+                /* ------------ MILJÖ & HÅLLBAR UTVECKLING ------------ */
+                {
+                    q: `Anrikning`,
+                    a: `Processen att separera och koncentrera värdefulla mineraler från malm.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Anrikningssand`,
+                    a: `Avfallsprodukt från anrikningsprocessen, ofta innehållande giftiga ämnen.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Avfallsdirektivet`,
+                    a: `EU-lagstiftning som reglerar hantering av avfall för att minska dess miljöpåverkan.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Avskogning`,
+                    a: `Permanent borttagning av skog, ofta för jordbruk, bebyggelse eller industri.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Bioackumulation`,
+                    a: `Ansamling av giftiga ämnen i organismer över tid, ofta i högre koncentrationer högre upp i näringskedjan.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Ekologisk hållbarhet`,
+                    a: `När ekosystem och naturresurser skyddas långsiktigt.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Ekologiskt fotavtryck`,
+                    a: `Mått på hur mycket naturresurser en person eller population förbrukar och hur mycket avfall de producerar.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Ekonomisk hållbarhet`,
+                    a: `När ekonomisk tillväxt är rättvis och fördelaktig för alla.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Ekonomiska styrmedel`,
+                    a: `Verktyg som skatter, subventioner och avgifter som används för att styra beteenden mot miljövänligare alternativ.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Fragmentering`,
+                    a: `Uppdelning av livsmiljöer i mindre, isolerade områden, vilket kan hota biologisk mångfald.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Förorenaren betalar-principen`,
+                    a: `Princip som innebär att den som orsakar miljöföroreningar ska stå för kostnaderna att åtgärda dem.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Försiktighetsprincipen`,
+                    a: `Princip som innebär att försiktighetsåtgärder ska vidtas när det finns risk för allvarliga miljö- eller hälsoskador.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Försurning`,
+                    a: `När naturliga miljöer blir surare på grund av föroreningar.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Förädling`,
+                    a: `Processen att bearbeta råvaror till färdiga produkter.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Habitatförstörelse`,
+                    a: `När naturliga livsmiljöer förstörs eller kraftigt förändras, vilket hotar de arter som lever där.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Havsförsurning`,
+                    a: `Minskning av havets pH-värde på grund av upptag av koldioxid från atmosfären.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Hållbar utveckling`,
+                    a: `En utveckling där våra behov idag blir tillfredsställda, utan att äventyra framtida generationers möjligheter att fylla sina behov.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Kemikalieinspektionen`,
+                    a: `Svensk myndighet som övervakar användning och hantering av kemikalier.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Konsumtionsperspektiv`,
+                    a: `Synsätt som fokuserar på miljöpåverkan av all konsumtion, oavsett var produktionen äger rum.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Kväveoxid`,
+                    a: `Gaser som bildas vid förbränning med hög temperatur, bidrar till försurning av mark och sjö.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Livscykelanalys`,
+                    a: `En metod för att bedöma miljöpåverkan av en produkt eller tjänst under hela dess livscykel, från råvara till avfall.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Malm`,
+                    a: `Mineraler som innehåller tillräckligt med metall för att vara lönsamma att utvinna.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Miljöbalken`,
+                    a: `Sveriges centrala miljölagstiftning som reglerar skydd av miljön och naturresurser.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Miljökonsekvensbeskrivning`,
+                    a: `En rapport som utvärderar de potentiella miljöeffekterna av ett planerat projekt.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Miljökonvention`,
+                    a: `En internationell överenskommelse för att skydda miljön och naturresurserna.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Näringsläckage`,
+                    a: `När näring från odlingar eller avverkningsområden löser sig i vatten och sedan transporteras till vattendrag, sjöar och hav.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Ozonskiktet`,
+                    a: `Lager i jordens atmosfär som skyddar mot solens skadliga ultravioletta strålning.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Produktionsperspektiv`,
+                    a: `Synsätt som fokuserar på miljöpåverkan av produktion inom ett geografiskt område.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Råvara`,
+                    a: `Material och mat som människan får från naturen.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Råvaruproduktion`,
+                    a: `Utvinning och bearbetning av naturliga resurser för att skapa material och varor.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Social hållbarhet`,
+                    a: `När alla människor har tillgång till grundläggande behov, rättigheter och möjligheter till ett gott liv.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Svaveldioxid`,
+                    a: `En gas som bildas vid förbränning av fossila bränslen, bidrar till försurning av mark och sjö.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Utdikning`,
+                    a: `Avledning av vatten från våtmarker för att skapa odlingsbar mark eller bebyggelse.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Virtuellt vatten`,
+                    a: `Mängden vatten som används för att producera varor och tjänster.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Överexploatering`,
+                    a: `Uttag av resurser i en takt som överstiger naturens förmåga att återhämta sig.`,
+                    subject: `miljö`
+                },
+                {
+                    q: `Övergödning`,
+                    a: `Näringsämnen, oftast från jordbruk, överflödar vattenmiljöer och orsakar algblomning och syrebrist.`,
+                    subject: `miljö`
+                },
+
+                /* ------------ GENETIK & CELLBIOLOGI ------------ */
+                {
+                    q: `Aminosyra`,
+                    a: `Byggstenar i proteiner.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `CRISPR/Cas9`,
+                    a: `En metod för precis genetisk redigering som använder RNA-guidade enzymer.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `DNA`,
+                    a: `Molekyl som bär genetisk information och styr organismernas utveckling och funktion.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `DNA-analys`,
+                    a: `Teknik för att studera och identifiera DNA-sekvenser.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Domesticering`,
+                    a: `Processen där vilda djur eller växter avlas för bättre passa in med människors levnadssätt.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Dominant anlag`,
+                    a: `Ett anlag som uttrycks (syns) så länge man har fått det från minst en av sina föräldrar.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Downs syndrom`,
+                    a: `En kromosommutation som orsakas av en extra kopia av kromosom 21.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Embryonal stamcell`,
+                    a: `Stamceller från embryon som kan utvecklas till alla celltyper i kroppen.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Endoplasmatiskt nätverk`,
+                    a: `Ett nätverk i cellen där proteiner formas.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Enzym (genetik)`,
+                    a: `Proteiner som påskyndar kemiska reaktioner i kroppen utan att förbrukas själva.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Epigenetik`,
+                    a: `Studiet av förändringar i genuttryck som inte innebär förändringar i DNA-sekvensen.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Evolution`,
+                    a: `Långsam förändring av arter över tid genom naturligt urval.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Gen`,
+                    a: `En sekvens av DNA som kodar för ett specifikt protein.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Genbank`,
+                    a: `En samling av genetiskt material, som frön eller DNA, för bevarande av biologisk mångfald.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Genetisk redigering`,
+                    a: `Teknologi för att förändra specifika gener i en organisms DNA.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Genetisk variation`,
+                    a: `Skillnader i DNA-sekvenser mellan individer inom en population.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Genom`,
+                    a: `Hela DNA-innehållet i en organism.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Genteknik`,
+                    a: `Teknologi som används för att förändra organismers genetiska material.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Gentekniknämnden`,
+                    a: `Svensk myndighet som övervakar användningen av genteknik.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Genterapi`,
+                    a: `Att ändra på människors gener för att behandla eller bota sjukdomar.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `GMO`,
+                    a: `Genetiskt modifierad organism, vars DNA har förändrats med hjälp av genteknik.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Golgiapparat`,
+                    a: `Organell som bearbetar och sorterar proteiner för transport ut ur cellen.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `GuideRNA`,
+                    a: `RNA-sekvens som leder Cas9-enzymet till den specifika DNA-sekvens som ska redigeras.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Klon`,
+                    a: `En genetiskt identisk kopia av en organism, cell eller DNA-sekvens.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Kloning`,
+                    a: `Skapandet av en genetiskt identisk kopia av en organism eller cell.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Kromosom`,
+                    a: `Delar av cellkärnans DNA, förekommer i par.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Kvävebas`,
+                    a: `Byggstenar i DNA och RNA; adenin, tymin (uracil i RNA), cytosin och guanin.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Könscell`,
+                    a: `Reproduktionsceller, som spermier och äggceller, som innehåller hälften av det genetiska materialet.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Könskromosom`,
+                    a: `Kromosomer som bestämmer könet hos en organism, exempelvis X och Y hos människor.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Lantras`,
+                    a: `En ras av djur eller växter som har utvecklats i en viss geografisk region och är anpassad till dess miljö.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Monogena anlag`,
+                    a: `Egenskaper som styrs av en enda gen.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `mRNA`,
+                    a: `Messenger-RNA, en typ av RNA som bär genetisk information från DNA till ribosomerna.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `mRNA-vaccin`,
+                    a: `Vaccin som använder budbärar-RNA för att "träna" immunförsvaret mot specifika sjukdomar.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Mutation`,
+                    a: `Förändring i DNA-sekvensen som kan leda till nya egenskaper.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Polygena anlag`,
+                    a: `Egenskaper som styrs av flera gener.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Recessivt anlag`,
+                    a: `Ett anlag som bara uttrycks (syns) om man fått anlaget från båda föräldrarna.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Replikation`,
+                    a: `Processen där DNA kopieras innan celldelning.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Ribosom (genetik)`,
+                    a: `Cellens "proteinfabrik" där aminosyror sätts ihop till proteiner.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Somatisk genförändring`,
+                    a: `Genetiska förändringar som görs i kroppsceller och inte kan ärvas av avkomman.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Stamcell`,
+                    a: `En cell som kan utvecklas till många olika celltyper.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Transgen organism`,
+                    a: `En organism som har fått gener från en annan art införda i sitt genom.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Transkription`,
+                    a: `Processen där DNA kopieras till mRNA.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Translation`,
+                    a: `Processen där mRNA översätts till en aminosyrasekvens och bildar ett protein.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Triplett`,
+                    a: `En sekvens av tre kvävebaser i DNA eller mRNA som kodar för en aminosyra.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Tyst mutation`,
+                    a: `En mutation som inte påverkar aminosyrasekvensen i ett protein.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Vuxen stamcell`,
+                    a: `Stamceller som finns i vuxna organismer och kan utvecklas till vissa celltyper.`,
+                    subject: `genetik`
+                },
+                {
+                    q: `Ärftlig egenskap`,
+                    a: `En egenskap som överförs från föräldrar till avkomma genom gener.`,
+                    subject: `genetik`
+                },
+
+                /* ------------ HÄLSA, KROPP & LIVSSTIL ------------ */
+                {
+                    q: `Abstinens`,
+                    a: `Symtom som uppstår när en person slutar använda en beroendeframkallande substans.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Alkohol`,
+                    a: `En psykoaktiv substans som finns i drycker som öl, vin och sprit.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Anabol process`,
+                    a: `Uppbyggande processer i ämnesomsättningen där små molekyler sätts ihop till större.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Anabola steroider`,
+                    a: `Syntetiska hormoner som liknar testosteron och kan öka muskelmassan och styrkan.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Anorexi`,
+                    a: `Ätstörning som kännetecknas av en ohälsosam viktminskning.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Avslappnande preparat`,
+                    a: `Läkemedel som används för att minska ångest och lugna nervositet.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Basalmetabolism`,
+                    a: `Den energi som kroppen behöver för att upprätthålla grundläggande funktioner i vila.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Belöningssystem`,
+                    a: `Ett system av särskilda nervbanor i hjärnan som skickar signaler som gör att man känner sig lycklig och nöjd när man gör vissa saker.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Beroendeframkallande`,
+                    a: `Ämnen eller aktiviteter som kan skapa fysiskt eller psykiskt beroende.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Blodsocker`,
+                    a: `Mängden glukos i blodet.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `BMI`,
+                    a: `Body Mass Index, ett mått på kroppsvikt i förhållande till längd.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Bristsjukdom`,
+                    a: `Sjukdom som uppstår på grund av brist på viktiga näringsämnen, som skörbjugg vid C-vitaminbrist.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Bulimi`,
+                    a: `Ätstörning som innebär återkommande hetsätning följt av kompensatoriska beteenden som kräkningar.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Cellulosa`,
+                    a: `En komplex kolhydrat som bygger upp växters cellväggar, otillgänglig som föda för människor.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Centralstimulerande preparat`,
+                    a: `Läkemedel som ökar aktiviteten i centrala nervsystemet och kan öka vakenhet och energi.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Dopamin`,
+                    a: `En signalsubstans i hjärnan som spelar en viktig roll i belöningssystemet.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Dopning`,
+                    a: `Användning av förbjudna substanser eller metoder för att förbättra idrottsprestationer.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Enkla sockerarter`,
+                    a: `Kolhydrater som består av en eller två sockermolekyler, som glukos och fruktos.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Epidemi`,
+                    a: `Ett utbrott av en sjukdom som sprider sig snabbt bland människor i ett begränsat område.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `EPO`,
+                    a: `Erytropoietin, ett hormon som stimulerar produktionen av röda blodkroppar och kan öka syreupptagningsförmågan.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Essentiell aminosyra`,
+                    a: `Aminosyror som kroppen inte kan producera själv och måste få genom kosten.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Essentiell fettsyra`,
+                    a: `Fettsyror som kroppen inte kan tillverka själv och måste få genom kosten, som omega-3 och omega-6.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Etanol`,
+                    a: `En alkohol som ingår i öl, vin och sprit.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Fetma`,
+                    a: `En överdriven ansamling av kroppsfett som kan påverka hälsan negativt.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Fett`,
+                    a: `Energigivande näringsämnen som består av triglycerider och används för lagring av energi.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Fettlever`,
+                    a: `Ett tillstånd där fett ansamlas i levern, ofta kopplat till alkoholmissbruk eller övervikt.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Fettlösliga vitaminer`,
+                    a: `Vitaminer som lagras i kroppens fettvävnad, som A, D, E och K.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Fettsyra`,
+                    a: `Byggstenar i fett, kan vara mättade eller omättade.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Folkhälsa`,
+                    a: `Befolkningens allmänna hälsotillstånd och välbefinnande.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Folkhälsomyndigheten`,
+                    a: `Svensk myndighet som arbetar för att främja folkhälsa och förebygga sjukdomar.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Fruktos`,
+                    a: `En enkel sockerart som finns naturligt i frukt och honung.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Fysisk aktivitet på recept`,
+                    a: `Ett medicinskt recept som uppmuntrar till fysisk aktivitet som behandling eller förebyggande åtgärd.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Glukos (hälsa)`,
+                    a: `En enkel sockerart som är en viktig energikälla för kroppens celler.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Glykogen`,
+                    a: `En lagringsform av glukos som finns i lever och muskler.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Hallucinogena preparat`,
+                    a: `Ämnen som kan framkalla hallucinationer och förändra uppfattningen av verkligheten.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Hetsätning`,
+                    a: `Ätstörning där personen äter ohälsosamt stora mängder mat på kort tid.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Immunförsvar`,
+                    a: `Kroppens system för att hindra och bekämpa infektioner och sjukdomar.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Katabol process`,
+                    a: `Nedbrytande processer i ämnesomsättningen där stora molekyler bryts ner till mindre.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Koffein`,
+                    a: `Ett centralstimulerande ämne som finns i kaffe, te och vissa läskedrycker.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Kolhydrater`,
+                    a: `Energigivande näringsämnen som finns i mat som bröd, pasta och frukt.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Kostfiber`,
+                    a: `Växtdelar som inte bryts ner av matsmältningssystemet men som är viktiga för tarmhälsan.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Livsmedelsverket`,
+                    a: `Svensk myndighet som arbetar för säker mat och bra matvanor.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Långsamma kolhydrater`,
+                    a: `Kolhydrater som bryts ner långsamt och ger en jämn blodsockerhöjning.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Metabolism`,
+                    a: `Ämnesomsättning, de kemiska processer i kroppen som omvandlar mat till energi och byggstenar för cellerna.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Mineralämnen`,
+                    a: `Oorganiska näringsämnen som är nödvändiga för kroppens funktioner, som kalcium och järn.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Missbruk`,
+                    a: `Skadligt eller problematiskt bruk av substanser som alkohol, narkotika eller läkemedel.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Mättat fett`,
+                    a: `Fettsyror utan "böjar" (dubbelbindningar), finns i animaliska produkter och vissa oljor.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Narkotika`,
+                    a: `Olika droger som påverkar hjärnan och är olagliga eller strikt reglerade.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Negativ stress`,
+                    a: `En form av stress som kan leda till hälsoproblem och försämrad livskvalitet.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Nikotin`,
+                    a: `Ett beroendeframkallande ämne som finns i tobaksprodukter.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `NPF`,
+                    a: `Neuropsykiatriska funktionsnedsättningar, som ADHD och autism.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Omättat fett`,
+                    a: `Fettsyror med en eller flera "böjar" (dubbelbindningar), finns i vegetabiliska oljor och fisk.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Pandemi`,
+                    a: `Ett sjukdomsutbrott som täcker en eller flera världsdelar.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Positiv stress`,
+                    a: `En form av stress som kan motivera och förbättra prestationer.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Proteiner`,
+                    a: `Näringsämnen som består av aminosyror och bygger upp kroppens vävnader och organ.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Psykisk ohälsa`,
+                    a: `När tankar och känslor gör att man mår dåligt och får svårt att hantera sin vardag.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Psykisk sjukdom`,
+                    a: `Allvarligare former av psykisk ohälsa, som depression och schizofreni.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Psykoaktiv substans`,
+                    a: `Ämnen som påverkar hjärnan och kan förändra sinnesstämning, medvetande och beteende.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `REM-sömn`,
+                    a: `En sömnfas där hjärnaktiviteten är hög och de flesta drömmar uppstår.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Skrumplever`,
+                    a: `Allvarlig leverskada där frisk levervävnad ersätts av ärrvävnad, ofta på grund av kroniskt alkoholmissbruk.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Slagvolym`,
+                    a: `Mängden blod som pumpas ut ur hjärtat vid varje slag.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Snabba kolhydrater`,
+                    a: `Kolhydrater som snabbt bryts ner till glukos och höjer blodsockret snabbt.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Spårämne`,
+                    a: `Mineralämnen som behövs i mycket små mängder, som zink och selen.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Stress`,
+                    a: `Kroppens reaktion på krävande eller hotande situationer, kan vara både fysisk och psykisk.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Stärkelse`,
+                    a: `En komplex kolhydrat som lagras i växter och bryts ner till glukos i kroppen.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Sömncykel`,
+                    a: `En period av sömn som inkluderar både lätt sömn, djup sömn och REM-sömn.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Tallriksmodellen`,
+                    a: `En modell för hur man kan komponera en hälsosam måltid med olika livsmedelsgrupper.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Toleransökning`,
+                    a: `När kroppen vänjer sig vid en substans och högre doser behövs för att uppnå samma effekt.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Transfett`,
+                    a: `Omättade fetter som har förändrats genom industriell bearbetning, kan vara skadliga för hälsan.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Triglycerider`,
+                    a: `Fettmolekyler bestående av glycerol och tre fettsyror, den vanligaste formen av fett i kroppen.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Utmattningssyndrom`,
+                    a: `Innebär att en person har flera olika kroppsliga och psykiska besvär som beror på svår stress i kombination med för lite återhämtning.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Vattenlösliga vitaminer`,
+                    a: `Vitaminer som inte lagras i kroppen, som B- och C-vitaminer.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Vilopuls`,
+                    a: `Antal hjärtslag per minut när kroppen är i vila.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Vitaminer`,
+                    a: `Organiska föreningar som är nödvändiga för kroppens hälsa och funktion.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Välfärdssjukdom`,
+                    a: `Sjukdomar som är vanliga i rika länder och ofta relaterade till livsstil, som fetma och diabetes.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Världshälsoorganisationen`,
+                    a: `En internationell organisation inom FN som arbetar för global hälsa och välbefinnande.`,
+                    subject: `hälsa`
+                },
+                {
+                    q: `Ätstörning`,
+                    a: `Psykisk sjukdom som påverkar ens förhållande till mat och kropp, som anorexi och bulimi.`,
+                    subject: `hälsa`
+                },
+
+                /* ------------ SEX & SAMLEVNAD ------------ */
+                {
+                    q: `Abort`,
+                    a: `Medicinsk eller kirurgisk metod för att avsluta en graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Aids`,
+                    a: `Ett tillstånd som orsakas av hiv där immunförsvaret är kraftigt försvagat.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Akut-p-piller`,
+                    a: `Hormonellt preparat som tas efter oskyddat samlag för att förhindra graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Asexuell`,
+                    a: `En person som inte upplever sexuell attraktion till andra människor.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Avbrutet samlag`,
+                    a: `Preventivmetod där penis dras ut ur slidan innan utlösning för att förhindra graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Bisexualitet`,
+                    a: `Sexuell attraktion till personer oavsett deras kön.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Cis`,
+                    a: `När en person har samma könsidentitet som det biologiska könet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Diskrimineringslagen`,
+                    a: `Lag som skyddar individer mot diskriminering baserat på bland annat kön, etnicitet och sexuell läggning.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Femidom`,
+                    a: `Preventivmedel som förhindrar graviditet och skyddar mot könssjukdomar.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Fertil (sex)`,
+                    a: `Förmåga att reproducera och få avkomma.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Genital herpes`,
+                    a: `En könssjukdom orsakad av virus som orsakar smärtsamma blåsor och sår på könsorganen.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Gonorré`,
+                    a: `En könssjukdom orsakad av bakterier som kan orsaka smärta och infertilitet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Hepatit`,
+                    a: `Inflammation i levern, ofta orsakad av virusinfektion.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Hermafrodit`,
+                    a: `En organism som har både manliga och kvinnliga reproduktionsorgan.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Heteronorm`,
+                    a: `Normen som säger att man ska identifiera sig som antingen man eller kvinna och uppträda typiskt ”manligt” eller ”kvinnligt”.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Hiv`,
+                    a: `Ett virus som attackerar immunförsvaret och kan leda till aids.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Homosexualitet`,
+                    a: `Sexuell attraktion till personer av samma kön.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Ickebinär`,
+                    a: `En person som inte identifierar sig som enbart man eller kvinna.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Intersex`,
+                    a: `När det biologiska könet inte kan beskrivas som tydligt man eller kvinna.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Juridiskt kön`,
+                    a: `Det kön som är registrerat i officiella dokument, såsom pass och personbevis.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Klamydia`,
+                    a: `En vanlig könssjukdom orsakad av bakterier som kan leda till infertilitet om den inte behandlas.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Klimakterie`,
+                    a: `Period i livet när en kvinna slutar ha menstruation och inte längre kan bli gravid naturligt.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Kondom`,
+                    a: `Preventivmedel som förhindrar graviditet och skyddar mot könssjukdomar.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Kondylom`,
+                    a: `En könssjukdom orsakad av humant papillomvirus (HPV) som orsakar vårtor på könsorganen.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Könscell (sex)`,
+                    a: `Reproduktionscell, såsom spermie eller äggcell, som innehåller hälften av den genetiska informationen.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Könsidentitet`,
+                    a: `En persons egen uppfattning och känsla av sitt kön.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Könskromosom (sex)`,
+                    a: `Kromosomer som bestämmer könet hos en organism, exempelvis X och Y hos människor.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Könssjukdom`,
+                    a: `Infektion som överförs genom sexuell kontakt.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Könsstympning`,
+                    a: `En kulturell praktik som innebär att delar av de yttre könsorganen skärs bort.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Könsuttryck`,
+                    a: `Hur en person uttrycker sitt kön genom till exempel kläder och beteende.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Livmoder`,
+                    a: `Organ där fostret utvecklas under graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Menstruation`,
+                    a: `Mens, månadsblödning från livmodern när en äggcell inte befruktas.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Mini-piller`,
+                    a: `Hormonella preventivmedel för att förhindra graviditet, innehåller bara gestagen.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Missfall`,
+                    a: `När en graviditet avbryts spontant innan fostret kan överleva utanför livmodern.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `P-piller`,
+                    a: `Hormonella preventivmedel för att förhindra graviditet, innehåller östrogen och gestagen.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Pessar`,
+                    a: `En kupformad barriär som sätts in i slidan och förhindrar graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `PMS`,
+                    a: `Premenstruellt syndrom, symtom som kan uppstå innan menstruation, som humörsvängningar och smärta.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Preventivmedel`,
+                    a: `Medel som används för att förhindra graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Progesteron`,
+                    a: `Ett könshormon som är viktigt för menstruationscykeln och upprätthållandet av graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Provrörsbefruktning`,
+                    a: `IVF, en metod där ägg och spermier befruktas utanför kroppen och embryot sedan sätts in i livmodern.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Pubertet`,
+                    a: `Period i livet när en person utvecklar fysiska tecken på vuxenhet och blir könsmogen.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Queer`,
+                    a: `Personer som ifrågasätter eller inte följer traditionella köns- och sexualitetsnormer.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Samtyckeslagen`,
+                    a: `Svensk lag som innebär att sexuell aktivitet kräver uttryckligt samtycke från alla inblandade parter.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Sexualdrift`,
+                    a: `Lust efter sexuell aktivitet, påverkas av könshormoner och hjärnans belöningssystem.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Slidkrans`,
+                    a: `Vävnadsveck vid slidöppningen, tidigare kallad mödomshinna.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Smittskyddslagen`,
+                    a: `Svensk lag som reglerar åtgärder för att förebygga spridning av smittsamma sjukdomar.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Sociala normer`,
+                    a: `Oskrivna regler och föreställningar om vad som anses vara normalt och riktigt.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Spiral`,
+                    a: `Ett preventivmedel som sätts in i livmodern och förhindrar graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Sterilisering`,
+                    a: `Permanent preventivmetod som innebär att manliga eller kvinnliga könsorgan blockeras eller tas bort.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Syfilis`,
+                    a: `En könssjukdom orsakad av bakterier som kan orsaka allvarliga hälsoproblem om den inte behandlas.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Säker period`,
+                    a: `Preventivmetod där samlag undviks vissa dagar i menstruationscykeln för att förhindra graviditet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Testosteron`,
+                    a: `Ett könshormon som bland annat påverkar hälsa, välbefinnande och den sexuella lusten.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Trans`,
+                    a: `När en person inte har samma könsidentitet som det biologiska eller det juridiska könet.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Transperson`,
+                    a: `En person vars könsidentitet inte stämmer överens med det kön de tilldelades vid födseln.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Äggledare`,
+                    a: `Rör som transporterar äggcellen från äggstocken till livmodern.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Äggstock`,
+                    a: `Kvinnlig könskörtel som producerar äggceller och hormoner som östrogen och progesteron.`,
+                    subject: `sexualitet`
+                },
+                {
+                    q: `Östrogen`,
+                    a: `Ett könshormon som är viktigt för bland annat skelettet, nervsystemet och menscykeln.`,
+                    subject: `sexualitet`
+                }
+            ];
+
+            const grid = document.getElementById('grid');
+            const searchInput = document.getElementById('search');
+            const countEl = document.getElementById('count');
+            const tagButtons = Array.from(document.querySelectorAll('.tag'));
+
+            let currentSubject = 'alla';
+            let currentSearch = '';
+
+            function renderCards() {
+                grid.innerHTML = '';
+
+                const filtered = flashcards.filter((card) => {
+                    const matchSubject =
+                        currentSubject === 'alla' ||
+                        card.subject === currentSubject;
+                    const text = (card.q + ' ' + card.a).toLowerCase();
+                    const matchSearch = text.includes(
+                        currentSearch.toLowerCase()
+                    );
+                    return matchSubject && matchSearch;
+                });
+
+                countEl.textContent = `${filtered.length} kort visas`;
+
+                filtered.forEach((card) => {
+                    const el = document.createElement('article');
+                    el.className = 'card';
+                    el.innerHTML = `
+          <div class="card-header">
+            <div class="card-term">${card.q}</div>
+            <div class="card-subject">${card.subject}</div>
+          </div>
+          <div class="card-answer">${card.a}</div>
+          <div class="card-toggle"></div>
+        `;
+                    el.addEventListener('click', () => {
+                        document
+                            .querySelectorAll('.card')
+                            .forEach((otherCard) => {
+                                if (otherCard !== el) {
+                                    otherCard.classList.remove('open');
+                                }
+                            });
+                        el.classList.toggle('open');
+                    });
+                    grid.appendChild(el);
+                });
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                renderCards();
+            });
+
+            tagButtons.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    tagButtons.forEach((b) => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSubject = btn.dataset.subject;
+                    renderCards();
+                });
+            });
+
+            renderCards();
+        </script>
+    </body>
+</html>
