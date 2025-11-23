@@ -187,16 +187,17 @@
             .card-answer {
                 margin-top: 8px;
                 font-size: 0.9rem;
-                line-height: 1.4;
+                line-height: 1.5;
                 color: var(--text-muted);
                 max-height: 0;
                 opacity: 0;
                 overflow: hidden;
                 transition: max-height 0.18s ease-out, opacity 0.18s ease-out;
+                white-space: pre-line;
             }
 
             .card.open .card-answer {
-                max-height: 200px; /* funkar bra för korta svar */
+                max-height: 500px; /* tillräckligt för längre svar med flera rader */
                 opacity: 1;
             }
 
@@ -275,8 +276,14 @@
                     <button class="tag" data-subject="sexualitet">
                         Sex & samlevnad
                     </button>
-                    <button class="tag" data-subject="lektion01">
-                        Lektion 01
+                    <button class="tag" data-subject="bakterier">
+                        Lektion 01: Bakterier
+                    </button>
+                    <button class="tag" data-subject="virus">
+                        Lektion 01: Virus
+                    </button>
+                    <button class="tag" data-subject="antibiotika">
+                        Lektion 01:Antibiotika
                     </button>
                 </div>
             </div>
@@ -2252,128 +2259,183 @@
                 /* ------------ LEKTION 01: BAKTERIER, VIRUS OCH ANTIBIOTIKA ------------ */
                 {
                     q: `Vad är skillnaden mellan en bakterie och ett virus när det gäller uppbyggnad och sätt att föröka sig?`,
-                    a: `Bakterier: är små levande celler, kan äta, växa och dela sig själva. Virus: är inte riktigt levande, de är bara lite arvsmassa i ett skal. De måste gå in i våra celler för att bli fler.`,
-                    subject: `lektion01`
+                    a: `Bakterier: är små levande celler, kan äta, växa och dela sig själva.
+Virus: är inte riktigt levande, de är bara lite arvsmassa i ett skal. De måste gå in i våra celler för att bli fler.`,
+                    subject: `bakterier`
                 },
                 {
                     q: `Varför räknas virus inte som levande på samma sätt som bakterier?`,
-                    a: `För att virus inte kan göra saker själva. De kan inte äta, kan inte göra energi och kan inte dela sig utan hjälp av våra celler.`,
-                    subject: `lektion01`
+                    a: `För att virus inte kan göra saker själva.
+De kan inte äta, kan inte göra energi och kan inte dela sig utan hjälp av våra celler.`,
+                    subject: `virus`
                 },
                 {
                     q: `Vad menas med att antibiotika bara fungerar mot bakterier och inte mot virus? Ge exempel på sjukdomar där antibiotika inte hjälper.`,
-                    a: `Antibiotika dödar bakterier, inte virus. Det hjälper inte mot t.ex. förkylning, influensa, de flesta halsont som bara är virus.`,
-                    subject: `lektion01`
+                    a: `Antibiotika dödar bakterier, inte virus.
+Det hjälper inte mot t.ex. förkylning, influensa, de flesta halsont som bara är virus.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Vad är antibiotika och vid vilken typ av infektioner används det?`,
                     a: `Antibiotika är medicin mot bakterier. Man tar det när man har en bakterieinfektion, t.ex. vissa lunginflammationer eller urinvägsinfektion.`,
-                    subject: `lektion01`
+                    subject: `antibiotika`
                 },
                 {
                     q: `Vad visar diagrammet över patienter med halsont som fick placebo respektive antibiotika? Vilka slutsatser kan man dra om effekten vid lindriga halsinfektioner?`,
                     a: `Diagrammet visar att efter några dagar blev många friska även utan antibiotika, skillnaden var inte jättestor. Det betyder: vid lindrig halsont blir man ofta frisk ändå, utan antibiotika.`,
-                    subject: `lektion01`
+                    subject: `antibiotika`
                 },
                 {
                     q: `Ge exempel på infektioner där antibiotika oftast inte behövs och kroppen brukar klara infektionen själv.`,
-                    a: `Kroppen klarar sig ofta själv. Till exempel vid förkylning, influensa, lätta sårinfektioner, lätt halsont. Då hjälper immunsystemet till att göra oss friska.`,
-                    subject: `lektion01`
+                    a: `Kroppen klarar sig ofta själv. Till exempel vid:
+• Förkylning
+• Influensa
+• Lätta sårinfektioner
+• Lätt halsont
+Då hjälper immunsystemet till att göra oss friska.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Ge exempel på allvarliga bakteriella infektioner där antibiotika kan rädda liv.`,
-                    a: `Exempel: svår bakteriell lunginflammation, hjärnhinneinflammation (orsakad av bakterier), sepsis (blodförgiftning). Här kan antibiotika vara livsviktigt.`,
-                    subject: `lektion01`
+                    a: `Exempel:
+• Svår bakteriell lunginflammation
+• Hjärnhinneinflammation (orsakad av bakterier)
+• Sepsis (blodförgiftning)
+Här kan antibiotika vara livsviktigt.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Varför är antibiotika viktigt för att kunna genomföra avancerad sjukvård, t.ex. operationer och cancerbehandling?`,
-                    a: `För att när man t.ex. opererar, ger cellgifter mot cancer, gör transplantationer är kroppen extra känslig. Antibiotika behövs för att stoppa farliga infektioner så patienter inte dör av bakterier.`,
-                    subject: `lektion01`
+                    a: `För att när man t.ex. opererar, ger cellgifter mot cancer, gör transplantationer är kroppen extra känslig.
+Antibiotika behövs för att stoppa farliga infektioner så patienter inte dör av bakterier.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `I listan med olika sjukdomar: vilka tycker du verkar självklara att behandla med antibiotika och vilka är mer tveksamma? Förklara.`,
-                    a: `Sjukdomar där antibiotika ska användas: allvarlig lunginflammation, blodförgiftning (sepsis), urinvägsinfektion (blåskatarr), halsfluss med särskilda bakterier (streptokocker). Sjukdomar där det är tveksamt eller ingen nytta: förkylning (virus – ingen nytta), vissa bihåleinflammationer, en del öroninflammationer (läker ofta själva).`,
-                    subject: `lektion01`
+                    a: `Sjukdomar där antibiotika ska användas:
+• Allvarlig lunginflammation
+• Blodförgiftning (sepsis)
+• Urinvägsinfektion (blåskatarr)
+• Halsfluss med särskilda bakterier (streptokocker)
+
+Sjukdomar där det är tveksamt eller ingen nytta:
+• Förkylning (virus – ingen nytta)
+• Vissa bihåleinflammationer
+• En del öroninflammationer (läker ofta själva)`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Varför är det viktigt att låta läkaren avgöra om antibiotika behövs eller inte?`,
-                    a: `För att läkaren kan skilja på virus och bakterier, vet när antibiotika hjälper eller inte. Om vi tar antibiotika i onödan kan bakterier bli resistenta.`,
-                    subject: `lektion01`
+                    a: `För att läkaren kan skilja på virus och bakterier, vet när antibiotika hjälper eller inte.
+Om vi tar antibiotika i onödan kan bakterier bli resistenta.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Vad menas med antibiotikaresistens?`,
                     a: `Det betyder att bakterierna har lärt sig stå emot antibiotika. Medicin som brukade funka dödar dem inte längre.`,
-                    subject: `lektion01`
+                    subject: `antibiotika`
                 },
                 {
                     q: `Vad visar kartan över resistens mot E. coli i världen? Vilka områden verkar ha störst problem?`,
                     a: `Kartan visar att i vissa länder finns mycket resistenta bakterier, i andra länder är det mindre problem. Stora delar av världen har ökande problem med resistens.`,
-                    subject: `lektion01`
+                    subject: `antibiotika`
                 },
                 {
                     q: `Hur har antibiotikaresistensen utvecklats i Sverige enligt diagrammen?`,
                     a: `Diagrammen visar att resistensen i Sverige har ökat över tid. Men Sverige ligger ändå bättre till än många andra länder, bland annat för att vi är försiktiga med antibiotika.`,
-                    subject: `lektion01`
+                    subject: `antibiotika`
                 },
                 {
                     q: `Vad innebär det att det har varit "brist på ny antibiotika sedan 80-talet"? Varför är det ett problem?`,
-                    a: `Det betyder att få nya sorter antibiotika har kommit, samtidigt blir fler bakterier resistenta. Problem: om gamla mediciner slutar funka och vi inte får nya, kan vanliga infektioner bli farliga igen.`,
-                    subject: `lektion01`
+                    a: `Det betyder att få nya sorter antibiotika har kommit, samtidigt blir fler bakterier resistenta.
+Problem: om gamla mediciner slutar funka och vi inte får nya, kan vanliga infektioner bli farliga igen.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Varför tog FN upp antibiotikaresistens i en deklaration 2016, och vad säger det om hur stort problemet är?`,
-                    a: `För att det är ett världsproblem. Om resistensen sprids kan fler människor dö av infektioner, sjukvården få stora problem. FN vill att länder ska samarbeta för att stoppa detta.`,
-                    subject: `lektion01`
+                    a: `För att det är ett världsproblem.
+Om resistensen sprids kan:
+• Fler människor dö av infektioner
+• Sjukvården få stora problem
+FN vill att länder ska samarbeta för att stoppa detta.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Nämn några sätt som antibiotika kan angripa bakterier på (verkningsmekanismer).`,
-                    a: `Antibiotika kan t.ex. förstöra bakteriers cellvägg, störa hur bakterier gör proteiner, påverka bakteriers DNA. Allt detta gör att bakterierna dör eller slutar växa.`,
-                    subject: `lektion01`
+                    a: `Antibiotika kan t.ex.:
+• Förstöra bakteriers cellvägg
+• Störa hur bakterier gör proteiner
+• Påverka bakteriers DNA
+Allt detta gör att bakterierna dör eller slutar växa.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Vad händer med en bakterie när den utsätts för penicillin, som stör uppbyggnaden av cellväggen?`,
                     a: `Penicillin förstör bakteriers cellvägg. Då blir cellen svag och kan gå sönder – bakterien spricker och dör.`,
-                    subject: `lektion01`
+                    subject: `antibiotika`
                 },
                 {
                     q: `Ge minst tre exempel på hur bakterier kan bli resistenta mot antibiotika.`,
-                    a: `Bakterier kan t.ex.: 1) Pumpa ut antibiotikan ur sig, 2) Göra cellmembranet så att mindre medicin kommer in, 3) Förstöra antibiotikan, 4) Ändra sig lite så att medicinen inte passar (kamouflera målet).`,
-                    subject: `lektion01`
+                    a: `Bakterier kan t.ex.:
+1) Pumpa ut antibiotikan ur sig
+2) Göra cellmembranet så att mindre medicin kommer in
+3) Förstöra antibiotikan
+4) Ändra sig lite så att medicinen inte passar (kamouflera målet)`,
+                    subject: `bakterier`
                 },
                 {
                     q: `Vad händer med normalfloran i kroppen när man behandlas med antibiotika?`,
-                    a: `Normalfloran = "snälla" bakterier vi har i t.ex. mage och mun. När vi tar antibiotika: många snälla bakterier dör, de resistenta bakterierna kan bli fler.`,
-                    subject: `lektion01`
+                    a: `Normalfloran = "snälla" bakterier vi har i t.ex. mage och mun.
+När vi tar antibiotika:
+• Många snälla bakterier dör
+• De resistenta bakterierna kan bli fler`,
+                    subject: `bakterier`
                 },
                 {
                     q: `Vilka risker finns det med att ha resistenta bakterier i normalfloran?`,
                     a: `Om resistenta bakterier hamnar på fel ställe i kroppen kan man få infektion som är svår att behandla, inte blir bra av vanlig antibiotika. Då kan man bli allvarligt sjuk.`,
-                    subject: `lektion01`
+                    subject: `bakterier`
                 },
                 {
                     q: `Vilka andra problem kan uppstå i munnen och tarmen vid antibiotikabehandling?`,
-                    a: `I munnen: svamp kan växa mer när skyddande bakterier dött. I tarmen: man kan få diarré. Antibiotika kan hamna i avloppsvattnet och göra fler bakterier resistenta i jord och vatten.`,
-                    subject: `lektion01`
+                    a: `I munnen: svamp kan växa mer när skyddande bakterier dött.
+I tarmen: man kan få diarré.
+Antibiotika kan hamna i avloppsvattnet och göra fler bakterier resistenta i jord och vatten.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Vad är skillnaden mellan rika och fattiga länder när det gäller tillgång till antibiotika och hygien?`,
-                    a: `I många rika länder: bra sjukvård, bra hygien, men antibiotika används för mycket. I många fattiga länder: dålig sjukvård, sämre hygien, brist på antibiotika, trots att folk verkligen behöver det.`,
-                    subject: `lektion01`
+                    a: `I många rika länder:
+• Bra sjukvård
+• Bra hygien
+• Men antibiotika används för mycket
+
+I många fattiga länder:
+• Dålig sjukvård
+• Sämre hygien
+• Brist på antibiotika, trots att folk verkligen behöver det`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Varför är det ett dilemma att antibiotika både överanvänds i vissa länder och saknas i andra?`,
-                    a: `För att vissa länder använder för mycket antibiotika → mer resistens. Andra länder har för lite antibiotika → människor dör av infektioner. Vi måste hitta en balans: använda antibiotika bara när det behövs men se till att alla som verkligen behöver får.`,
-                    subject: `lektion01`
+                    a: `För att vissa länder använder för mycket antibiotika → mer resistens.
+Andra länder har för lite antibiotika → människor dör av infektioner.
+Vi måste hitta en balans: använda antibiotika bara när det behövs men se till att alla som verkligen behöver får.`,
+                    subject: `antibiotika`
                 },
                 {
                     q: `Ska man sluta ta antibiotika när man känner sig bättre? Varför/varför inte?`,
                     a: `Nej. Man ska ta hela kuren som läkaren sagt. Annars kan några bakterier överleva och bli resistenta.`,
-                    subject: `lektion01`
+                    subject: `antibiotika`
                 },
                 {
                     q: `Är det okej att spara och senare självmedicinera med överblivet penicillin? Motivera ditt svar.`,
-                    a: `Nej. Du vet inte om det är virus eller bakterier, du kan ta fel dos, det kan göra att bakterier blir mer resistenta. Du ska alltid prata med läkare först.`,
-                    subject: `lektion01`
+                    a: `Nej.
+• Du vet inte om det är virus eller bakterier
+• Du kan ta fel dos
+• Det kan göra att bakterier blir mer resistenta
+Du ska alltid prata med läkare först.`,
+                    subject: `antibiotika`
                 }
             ];
 
